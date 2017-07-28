@@ -36,12 +36,13 @@
 
 -type serverref() :: atom() | {atom(), node()} | {global, atom()} | {via, module(), term()} | pid().
 -type opts() :: [{failure_threshold, pos_integer()} | {retry_timeout, pos_integer()}].
+-type mfargs()   :: {M :: module(), F :: atom(), A :: [term()] | undefined}.
 
 % @doc Start a new circuit breaker.
 %
 -spec start_circuit_breaker(Name, MFA) -> {ok, pid()} | {error, _} when
     Name :: atom(),
-    MFA :: mfa().
+    MFA :: mfargs().
 start_circuit_breaker(Name, MFA) ->
     start_circuit_breaker(Name, MFA, []).
 
@@ -50,7 +51,7 @@ start_circuit_breaker(Name, MFA) ->
 -spec start_circuit_breaker(Supervisor, Name, Args) -> {ok, pid()} | {error, _} when
     Supervisor :: serverref(),
     Name :: atom(),
-    Args :: mfa() | opts().
+    Args :: mfargs() | opts().
 start_circuit_breaker(Supervisor, Name, MFA) when is_tuple(MFA) ->
     start_circuit_breaker(Supervisor, Name, MFA, []);
 start_circuit_breaker(Name, MFA, Opts) when is_list(Opts) ->
@@ -59,7 +60,7 @@ start_circuit_breaker(Name, MFA, Opts) when is_list(Opts) ->
 -spec start_circuit_breaker(Supervisor, Name, MFA, Opts) -> {ok, pid()} | {error, _} when
     Supervisor :: serverref(),
     Name :: atom(),
-    MFA :: mfa(),
+    MFA :: mfargs(),
     Opts :: opts().
 start_circuit_breaker(Supervisor, Name, MFA, Opts) ->
     breaky_app_sup:start(Supervisor, Name, MFA, Opts).
@@ -105,13 +106,13 @@ failure(Name) ->
 
 % @doc Call the process
 %
--spec call(Name, Msg) -> {ok, term()} | off when
+-spec call(Name, Msg) -> {ok, term()} | ok | off when
     Name :: atom() | {global, term()} | {via, module(), term()},
     Msg :: term().
 call(Name, Msg) ->
     call(Name, Msg, 5000).
 
--spec call(Name, Msg, Timeout) -> {ok, term()} | off when
+-spec call(Name, Msg, Timeout) -> {ok, term()} | ok | off when
     Name :: atom() | {global, term()} | {via, module(), term()},
     Msg :: term(),
     Timeout :: non_neg_integer() | infinity.
